@@ -49,3 +49,10 @@ class user(BaseModel):
     id:str = Body(...)
     caste:Annotated[str,Body()]
 
+#additional validation 
+from fastapi import Query
+
+@app.get('/person/{id}')
+async def human(id:Annotated[str|None , Query(max_length=10)]):
+    df = {}
+    return df[id]
