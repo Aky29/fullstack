@@ -1,20 +1,43 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import Optional
-
+from fastapi import FastAPI,Body
+from pydantic import BaseModel,validate_call,ValidationError,StringConstraints
+from typing import Optional,Annotated
+from pydantic import Field
 app = FastAPI()
 
 class iteams(BaseModel):
-    name:str
-    id:int
+    name:str = Body(...)
+    id:int = Body 
     price:float
     tax:Optional[float]=None
 
+#path parameter
 @app.get("/items/{name}")
-async def items(name:str, price:int|None =None):
-    return {"item name":name , "price":price}
+async def items(name:str, price:int|None =None,id:int|None= None,expiry:int|None=None):
+    return {"item name":name , "price":price,"id":id,"expiry":expiry}
 
 @app.get("/item")
 async def many_items():
     items_list = {"name":"itm1","price":100.2,"id":12331,"tax":10.2}
     return iteams(**items_list)
+
+#data validation 
+class Item(BaseModel):
+    name:str = Field(...,min_length=4)
+    description:str
+    price:float
+
+@validate_call
+def validate_name(name:Annotated[str,StringConstraints(min_length=4)]):
+    return name 
+try:
+    name = validate_name(name = 'janu')
+    product = Item(name="comb",description = "used to fix hair",price= 400.1)
+    print(product)
+    print(product.model_dump(exclude = ("description")))
+    print("name is valid")
+except ValidationError as error:
+    print(f"error occured {error}")
+
+@app.post("/product")
+async def create_item(item:Item):
+    return item 
