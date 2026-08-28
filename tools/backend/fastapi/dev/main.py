@@ -41,3 +41,11 @@ except ValidationError as error:
 @app.post("/product")
 async def create_item(item:Item):
     return item 
+
+#pydantic basemodel with fastapi body 
+
+class user(BaseModel):
+    name:str = Body(...)
+    id:str = Body(...)
+    caste:Annotated[str,Body()]
+
