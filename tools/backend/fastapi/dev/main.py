@@ -119,3 +119,131 @@ async def creat_dynamic_model(
         'message':"product created",
         'product': valid_product.model_dump()
         }
+
+data_for_get = {
+
+    # =========================
+    # FOOD
+    # categorical_id = 1
+    # =========================
+
+    101: {
+        'categorical_id': 1,
+        'sku': 'dosa',
+        'price': 200.1,
+        'attributes': {
+            'expiry': '2026-11-23',
+            'ingredients': ['batter', 'potato', 'onion']
+        }
+    },
+
+    102: {
+        'categorical_id': 1,
+        'sku': 'idli',
+        'price': 120.0,
+        'attributes': {
+            'expiry': '2026-10-15',
+            'ingredients': ['rice', 'urad dal', 'salt']
+        }
+    },
+
+    103: {
+        'categorical_id': 1,
+        'sku': 'biryani',
+        'price': 350.5,
+        'attributes': {
+            'expiry': '2026-09-10',
+            'ingredients': ['rice', 'chicken', 'onion', 'spices']
+        }
+    },
+
+
+    # =========================
+    # GAMES
+    # categorical_id = 2
+    # =========================
+
+    201: {
+        'categorical_id': 2,
+        'sku': 'gta6',
+        'price': 4999.0,
+        'attributes': {
+            'genre': ['action', 'adventure', 'open-world'],
+            'rating': 4.8
+        }
+    },
+
+    202: {
+        'categorical_id': 2,
+        'sku': 'minecraft',
+        'price': 1999.0,
+        'attributes': {
+            'genre': ['sandbox', 'survival', 'adventure'],
+            'rating': 4.7
+        }
+    },
+
+    203: {
+        'categorical_id': 2,
+        'sku': 'tekken8',
+        'price': 2999.0,
+        'attributes': {
+            'genre': ['fighting', 'action'],
+            'rating': 4.6
+        }
+    },
+
+
+    # =========================
+    # ELECTRONICS
+    # categorical_id = 3
+    # =========================
+
+    301: {
+        'categorical_id': 3,
+        'sku': 'iphone17',
+        'price': 79999.0,
+        'attributes': {
+            'specific': ['256GB', 'OLED', '5G']
+        }
+    },
+
+    302: {
+        'categorical_id': 3,
+        'sku': 'samsung-tv',
+        'price': 54999.0,
+        'attributes': {
+            'specific': ['55-inch', '4K', 'OLED', 'HDR']
+        }
+    },
+
+    303: {
+        'categorical_id': 3,
+        'sku': 'gaming-laptop',
+        'price': 89999.0,
+        'attributes': {
+            'specific': ['16GB RAM', '1TB SSD', 'RTX 4060']
+        }
+    }
+}
+
+@app.get("/product/getecom/{id}")
+async def get_data(id:int):
+    product = data_for_get[int(id)]
+    if not product:
+        raise HTTPException(status_code=404,detail= "product not exist")
+    cat_id = product['categorical_id']
+    ResponseModel = use_model(cat_id)
+    response_data = {
+        'sku':product['sku'],
+        'price':product['price'],
+        **product['attributes']
+    }
+    try:
+        return ResponseModel(**response_data)
+    except Exception as error:
+        raise HTTPException(status_code=422,detail=str(error))
+
+@app.get('/products/all',response_model=List[Dict[str,Any]])
+async def get_all():
+    return list(data_for_get.values())
