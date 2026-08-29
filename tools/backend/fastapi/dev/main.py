@@ -52,7 +52,27 @@ class user(BaseModel):
 #additional validation 
 from fastapi import Query
 
-@app.get('/person/{id}')
+@app.get('/person')
 async def human(id:Annotated[str|None , Query(max_length=10)]):
     df = {}
     return df[id]
+
+#data injection
+from fastapi import Depends,Header,Path,HTTPException,status
+
+async def get_db_session():
+    session = {1 : user(name ="anish",id = '601823542',caste='obc')}
+    yield session
+
+DBsession = Annotated[dict,Depends(get_db_session)]
+async def get__user(token:Annotated[str|None , Header()]):
+    user = {'username' : "test_user"}
+    return user
+
+CurrentUser = Annotated[dict,Depends(get__user)]
+
+@app.get("/productid/{product_id}")
+async def read_items(product_id:Annotated[int,Path(ge=1)],db : DBsession):
+    if product_id not in db:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail = "Item not present")
+    return {'id':product_id,**db[product_id].model_dump()}
